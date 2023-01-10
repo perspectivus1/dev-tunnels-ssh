@@ -29,6 +29,7 @@ import {
 	TraceLevel,
 } from '@microsoft/dev-tunnels-ssh';
 import {
+	LocalPortForwarder,
 	PortForwardingService,
 	PortForwardRequestMessage,
 	SshClient,
@@ -94,9 +95,10 @@ async function main() {
 	const host = argv._[1] as string;
 	const command = (argv._[2] as string) || null;
 	const username = (argv.l || argv.login || argv.username) as string;
+	const localPortForwarding = argv.L as string;
 	const sshOverWebsocket = !!argv.w;
 
-	if (tool === 'ssh') return ssh(host, port, username, options, command);
+	if (tool === 'ssh') return ssh(host, port, username, options, command, localPortForwarding);
 	else if (tool === 'sshd') return sshd(port, options, sshOverWebsocket);
 	else return usage();
 }
@@ -107,6 +109,7 @@ async function ssh(
 	username: string,
 	options: { [name: string]: string },
 	command: string | null,
+	localPortForwarding?: string,
 ) {
 	if (!host) return usage('Specify a host.');
 	if (!port) return usage('Specify a port.');
@@ -155,6 +158,7 @@ async function ssh(
 		config.protocolExtensions.push(SshProtocolExtensionNames.sessionReconnect);
 		config.protocolExtensions.push(SshProtocolExtensionNames.sessionLatency);
 	}
+	config.addService(PortForwardingService);
 
 	const client = new SshClient(config);
 	client.trace = trace;
@@ -191,6 +195,31 @@ async function ssh(
 	}
 
 	const channel = await session.openChannel();
+
+	if (localPortForwarding) {
+		let localIP = '127.0.0.1';
+		let localPort = 80;
+		let remoteHost = 'www.ubuntuforums.org';
+		let remotePort = 80;
+
+		const pfs = session.activateService(PortForwardingService);
+		let parts = localPortForwarding.split(':');
+		if (parts.length === 3) {
+			localPort = Number.parseInt(parts[0]);
+			remoteHost = parts[1];
+			remotePort = Number.parseInt(parts[2]);
+		}
+		const forwarder: LocalPortForwarder = await pfs.forwardToRemotePort(localIP, localPort, remoteHost, remotePort);
+		console.log('Port forwarding is active. Press any key to cancel...');
+		process.stdin.resume();
+		await new Promise((resolve) => {
+			process.stdin.on('data', (data) => {
+				return resolve(data);
+			});
+		});
+
+		forwarder.dispose();
+	}
 
 	if (command) {
 		const request = new CommandRequestMessage();

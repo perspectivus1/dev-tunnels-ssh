@@ -38,6 +38,7 @@ Run the server:
 node out/lib/ssh-test/cli.js sshd -p 9881 -o LogLevel=verbose -o AuthorizedKeysFile=/home/auser/.ssh/authorized_keys
 ```
 
+Run the client:
 ```sh
 node out/lib/ssh-test/cli.js ssh -p 9881 localhost -l auser -o UserKnownHostsFile=/tmp/known_hosts -o IdentityFile=/home/auser/.ssh/id_rsa-exec
 ```
@@ -89,7 +90,7 @@ VS Code launch configurations:
 				"-o",
 				"UserKnownHostsFile=/tmp/known_hosts",
 				"-o",
-				"IdentityFile=/home/auser/.ssh/id_rsa.2",
+				"IdentityFile=/home/auser/.ssh/id_rsa-exec",
 				"ls"
 			],
 			"skipFiles": [
