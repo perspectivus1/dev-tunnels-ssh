@@ -27,8 +27,7 @@
 			"request": "launch",
 			"name": "Launch Benchmarks",
 			"program": "${workspaceFolder}/out/lib/ssh-bench/main",
-			"args": [
-			],
+			"args": [],
 			"skipFiles": [
 				"<node_internals>/**/*.js"
 			],
@@ -64,6 +63,56 @@
 				"<node_internals>/**/*.js"
 			],
 			"stopOnEntry": false
-		}
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Launch Node.js server",
+			"program": "${workspaceFolder}/out/lib/ssh-test/cli",
+			"args": [
+				"sshd",
+				"-p",
+				"9881",
+				"-o",
+				"AuthorizedKeysFile=/home/i034929/.ssh/authorized_keys",
+				"-o",
+				"LogLevel=verbose"
+			],
+			"skipFiles": [
+				"<node_internals>/**/*.js"
+			],
+			"env": {
+				"DEBUG": "dev-tunnels-ssh"
+			},
+			"console": "integratedTerminal",
+			"sourceMaps": true
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Launch Node.js client",
+			"program": "${workspaceFolder}/out/lib/ssh-test/cli",
+			"args": [
+				"ssh",
+				"-p",
+				"9881",
+				"localhost",
+				"-l",
+				"i034929",
+				"-o",
+				"UserKnownHostsFile=/tmp/known_hosts",
+				"-o",
+				"IdentityFile=/home/i034929/.ssh/id_rsa.2",
+				"ls"
+			],
+			"skipFiles": [
+				"<node_internals>/**/*.js"
+			],
+			"env": {
+				"DEBUG": "dev-tunnels-ssh"
+			},
+			"console": "integratedTerminal",
+			"sourceMaps": true
+		},
 	]
 }

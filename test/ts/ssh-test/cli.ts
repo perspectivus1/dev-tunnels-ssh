@@ -34,10 +34,13 @@ import {
 	SshClient,
 	SshServer,
 } from '@microsoft/dev-tunnels-ssh-tcp';
+import {
+	ExecService,
+} from '../../../out/lib/ssh-tcp/services/execService.js'
 import { importKey, importKeyFile, KeyEncoding, KeyFormat } from '@microsoft/dev-tunnels-ssh-keys';
 import 'source-map-support/register';
 
-let trace: Trace = (level, eventId, msg) => {};
+let trace: Trace = (level, eventId, msg) => { };
 
 main()
 	.then((exitCode) => process.exit(exitCode))
@@ -53,10 +56,10 @@ function usage(errorMessage?: string) {
 	}
 	console.error(
 		'Usage: ssh -p <port> ' +
-			'-l <username> ' +
-			'[-o IdentityFile=<keyFile>] ' +
-			'[-o UserKnownHostsFile=<hostsFile>] ' +
-			'<host> [command]',
+		'-l <username> ' +
+		'[-o IdentityFile=<keyFile>] ' +
+		'[-o UserKnownHostsFile=<hostsFile>] ' +
+		'<host> [command]',
 	);
 	console.error('Usage: sshd -p <port> [-w] [-o HostKey=<keyFile>]');
 	return 2;
@@ -266,6 +269,7 @@ async function sshd(port: number, options: { [name: string]: string }, sshOverWe
 	config.protocolExtensions.push(SshProtocolExtensionNames.sessionReconnect);
 	config.protocolExtensions.push(SshProtocolExtensionNames.sessionLatency);
 	config.addService(PortForwardingService);
+	config.addService(ExecService);
 
 	if (sshOverWebsocket) {
 		await sshWebsocketServer(port, config, hostKeys);
